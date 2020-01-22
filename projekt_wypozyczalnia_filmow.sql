@@ -57,7 +57,31 @@ insert into movies(Title, MovieTypeId) values ('Matrix 11', 1),
 drop procedure if exists klientWypozyczylFilm;
 go
 create procedure klientWypozyczylFilm()
+--do edycji procedura
+drop procedure if exists klientWypozyczylFilm;
+go
+create procedure klientWypozyczylFilm(@filmid int, @klientid nvarchar(50))
+as
+	Begin
+		if not exists
+			(
+			select 1 from Clients
+				where ClientId = @klientid
+			)
+			begin
+				insert into klientksiazki (klientMeno, knigaid, punkty)
+					values (@klientdelikwent, @ksiazkaid, 1)
+			end
+		else 
+			begin
+				update klientksiazki 
+				set knigaid = @ksiazkaid, punkty = (punkty+1)
+				where klientMeno = @klientdelikwent
+			end
+	END
 
+go
+exec dbo.klientWyPozycz  @ksiazkaid = 3, @klientdelikwent = 'marek'
 
 drop procedure if exists podsumowanieKlienta;
 go
