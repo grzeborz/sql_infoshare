@@ -9,17 +9,17 @@ create table Klient (
 drop table if exists Ksiazka2;
 create table Ksiazka2(
 	ksiazkaId int identity(1,1) primary key,
-	klientId int null)
-
-insert into Ksiazka2 (klientId) values (1),
-								(2),
-								(3),
-								(4)
+	klientId int null foreign key references Klient(id) on delete cascade)
 
 insert into Klient (klientMeno) values ('zdzichu'),
 								('tarzan'),
 								('stefan'),
 								('Zbigniew')
+
+insert into Ksiazka2 (klientId) values (1),
+								(2),
+								(3),
+								(4)
 
 --drop table if exists Klient;
 --create table Klient(
