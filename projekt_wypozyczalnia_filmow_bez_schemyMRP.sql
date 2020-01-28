@@ -25,12 +25,16 @@ Składa się z tabel:
 --GO
 
 --Tworzę tabelę filmy
+use Northwind
+go
 drop table if exists moviesType;
 Create table moviesType
 (
 MovieTypeId  int identity(1,1) NOT NULL primary key,
 MovieType nvarchar(15) not null,
 );
+use Northwind
+go
 drop table if exists movies;
 Create table movies
 (
@@ -38,6 +42,8 @@ MovieId int identity(1,1) NOT NULL primary key,
 Title nvarchar(50) not null,
 MovieTypeId int foreign key references moviesType(MovieTypeId)
 );
+use Northwind
+go
 drop table if exists Clients;
 Create table Clients
 (
@@ -46,7 +52,8 @@ ClientName ntext,
 ClientSurname ntext,
 BonusPoints int default 0
 );
-
+use Northwind
+go
 drop table if exists ClientsOrders;
 Create table ClientsOrders
 (
@@ -55,8 +62,8 @@ ClientId int foreign key references Clients(ClientId),
 MovieId int foreign key references movies(MovieId),
 DateStart date not null,
 DateEnd date not null,
-Koszt money not null,
-KosztOpoznienia money not null
+Koszt money,
+KosztOpoznienia money
 );
 
 insert into moviesType(MovieType) 
@@ -106,9 +113,20 @@ begin
 						set @wypKlientId = (select top 1 ClientId from ClientsOrders where MovieId = @filmId)
 						if (@wypKlientId is null)
 							begin
-								insert ClientsOrders (ClientId, MovieId, DateStart, DateEnd) values  (@KlientId, @filmid, GETDATE(), GETDATE()+ @iloscDni)  --where MovieId = @filmId
-								update Clients set BonusPoints = BonusPoints + 1 where ClientId = @KlientId
-								print 'Procedura wypożyczenia zakończyła się powodzeniem.'
+								declare @kosztfilmu money, @start date = GETDATE(), @koniec date = GETDATE()+ @iloscDni, @roznicadni int;
+								set @kosztfilmu = (select case
+																		when m.MovieTypeId = 1 then 40 * @roznicadni
+																		when m.MovieTypeId = 2 and @roznicadni <= 3 then @roznicadni * 10
+																		when m.MovieTypeId = 2 and @roznicadni > 3 then 30 + (@roznicadni - 3)*30
+																		when m.MovieTypeId = 3 and @roznicadni <= 5 then @roznicadni * 30
+																		when m.MovieTypeId = 3 and @roznicadni > 5 then 30 + (@roznicadni - 5)*30
+																	end
+																from movies m 
+																left join moviesType mt 
+																on m.MovieTypeId = mt.MovieTypeId
+																where MovieId = @filmId)
+								insert into ClientsOrders (ClientId, MovieId, DateStart, DateEnd, Koszt) values (@KlientId, @filmid, @start, @koniec,@kosztfilmu)  --where MovieId = @filmId
+								update Clients set BonusPoints = BonusPoints + 1 where ClientId = @KlientId	
 							end
 						else
 							declare @dataZwrotu nvarchar(20) = (select CAST(DateEnd as nvarchar(20)) from ClientsOrders where MovieId = @filmId)
@@ -155,3 +173,4 @@ exec northwind.dbo.klientWypozyczylFilm  @filmid = 1, @klientid =1, @iloscDni = 
 --Matrix 11 (nowy) 2 extra days 80 PLN
 --Spider Man (zwykły) 1 days 30 PLN
 
+select convert(int,datediff(day,GETDATE(),GETDATE()+2))
