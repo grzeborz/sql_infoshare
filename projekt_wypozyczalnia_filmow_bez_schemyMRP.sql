@@ -113,24 +113,27 @@ begin
 						set @wypKlientId = (select top 1 ClientId from ClientsOrders where MovieId = @filmId)
 						if (@wypKlientId is null)
 							begin
-								declare @kosztfilmu money, @start date = GETDATE(), @koniec date = GETDATE()+ @iloscDni, @roznicadni int;
+								declare @kosztfilmu money, convert(money, @start date = GETDATE(), @koniec date = GETDATE()+ @iloscDni, @roznicadni int;
 								set @kosztfilmu = (select case
 																		when m.MovieTypeId = 1 then 40 * @roznicadni
 																		when m.MovieTypeId = 2 and @roznicadni <= 3 then @roznicadni * 10
 																		when m.MovieTypeId = 2 and @roznicadni > 3 then 30 + (@roznicadni - 3)*30
 																		when m.MovieTypeId = 3 and @roznicadni <= 5 then @roznicadni * 30
 																		when m.MovieTypeId = 3 and @roznicadni > 5 then 30 + (@roznicadni - 5)*30
-																	end
+																	end)
 																from movies m 
 																left join moviesType mt 
 																on m.MovieTypeId = mt.MovieTypeId
 																where MovieId = @filmId)
+								print @kosztfilmu
 								insert into ClientsOrders (ClientId, MovieId, DateStart, DateEnd, Koszt) values (@KlientId, @filmid, @start, @koniec,@kosztfilmu)  --where MovieId = @filmId
 								update Clients set BonusPoints = BonusPoints + 1 where ClientId = @KlientId	
 							end
 						else
 							declare @dataZwrotu nvarchar(20) = (select CAST(DateEnd as nvarchar(20)) from ClientsOrders where MovieId = @filmId)
-							raiserror('Film został wypozyczony klientowi o id %d zostanie zwrócony %s, Zapraszamy ponownie.', 16, 1, @wypKlientId, @dataZwrotu)
+							begin
+								raiserror('Film został wypozyczony klientowi o id %d zostanie zwrócony %s, Zapraszamy ponownie.', 16, 1, @wypKlientId, @dataZwrotu)
+							end
 						--begin
 						--	print 'Ksiazka wypozyczona klientowi o id ' + convert(nvarchar(5), @wypKlientId)
 						--end
@@ -158,7 +161,7 @@ end
 
 
 go
-exec northwind.dbo.klientWypozyczylFilm  @filmid = 1, @klientid =1, @iloscDni = 2
+exec northwind.dbo.klientWypozyczylFilm  @filmid = 2, @klientid =2, @iloscDni = 6
 
 --drop procedure if exists podsumowanieKlienta;
 --go
