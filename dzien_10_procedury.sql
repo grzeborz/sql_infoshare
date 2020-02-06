@@ -75,7 +75,8 @@ exec WypiszPracownikow @Miasto = 'London'
 --Tabele: Categories, Products, [Order Details]
 --Napisać procedurę która Obniży cenę UnitPrice o ilość procent przekazaną jako argument dla wszystkich produktów 
 --lub dla podanej kategorii produktów
-
+use Northwind
+go
 drop procedure if exists ObnizycCeneOProcent
 go
 create procedure ObnizycCeneOProcent(@Procent nvarchar(3), @Kategoria int = null )

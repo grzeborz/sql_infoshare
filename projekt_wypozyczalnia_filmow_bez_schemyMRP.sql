@@ -113,7 +113,7 @@ begin
 						set @wypKlientId = (select top 1 ClientId from ClientsOrders where MovieId = @filmId)
 						if (@wypKlientId is null)
 							begin
-								declare @kosztfilmu money, convert(money, @start date = GETDATE(), @koniec date = GETDATE()+ @iloscDni, @roznicadni int;
+								declare @kosztfilmu money, @start date = GETDATE(), @koniec date = GETDATE()+ @iloscDni, @roznicadni int;
 								set @kosztfilmu = (select case
 																		when m.MovieTypeId = 1 then 40 * @roznicadni
 																		when m.MovieTypeId = 2 and @roznicadni <= 3 then @roznicadni * 10
